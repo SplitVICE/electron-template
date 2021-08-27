@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- BOOTSTRAP -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <title>Electron Template by VICE</title>
+
+</head>
+
+<body class='container mt-5'>
+    <div class="h1">Electron Template</div>
+    See code to understand this application
+
+    <hr>
+
+    <div id="app">
+
+        <!-- SEND DATA TO THE MAIN PROCESS -->
+        <input class="form-control mb-3" type="text" placeholder="Data to send to the Main Process"
+            v-model="ipcMain_send_data">
+        <button class="btn btn-light" @click="send_data_to_ipcMain">Send data</button>
+
+        <hr>
+        <button class="btn btn-light" @click="close_application">Close application</button>
+        <br><br>
+        <button class="btn btn-light" @click="ping_main_process">Ping Main Process</button>
+        <div v-if="pong == true">Server answered: pong</div>
+
+        <hr>
+        <input class="form-control mb-3" type="text" placeholder="Hi from Main Process" v-model="ipcMain_hi">
+        <button class="btn btn-light" @click="hi">Send data</button>
+
+    </div>
+
+    <!-- VUE CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
+    <script>
+        // electron variable to stablish a connection with the Main Process
+        const { ipcRenderer } = require('electron');
+
+        // changes vue's pong == true
+        ipcRenderer.on('pong', e => {
+            app.pong = true;
+        });
+
+        // ================================================================================
+        // VUE code
+        // ================================================================================
+        const app = new Vue({
+            el: '#app',
+            data: {
+                ipcMain_send_data: '',
+                pong: false,
+                ipcMain_hi: ''
+            },
+            methods: {
+                // example where data is send to the Main Process
+                send_data_to_ipcMain() {
+                    if (!this.ipcMain_send_data) { return; }
+                    ipcRenderer.send('data send', this.ipcMain_send_data);
+                    this.ipcMain_send_data = '';
+                },
+                // example to trigger some action to the Main Process
+                close_application() {
+                    ipcRenderer.send('close');
+                },
+                // example where Main Process is triggered and data is received back
+                ping_main_process() {
+                    ipcRenderer.send('ping');
+                },
+                // sends a synchronous task to the Main Process
+                hi() {
+                    if (!this.ipcMain_hi) { return; }
+                    this.ipcMain_hi = ipcRenderer.sendSync('hi', this.ipcMain_hi);
+                    console.log(this.ipcMain_hi);
+                }
+            },
+        });
+    </script>
+
+    <style>
+        body {
+            background-color: rgb(15, 15, 15);
+            color: white;
+        }
+    </style>
+
+</body>
+
+</html>
