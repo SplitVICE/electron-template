@@ -1,5 +1,4 @@
-
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const env = require('./config/env');
 
